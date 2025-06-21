@@ -60,7 +60,7 @@ bool UKaosGameplayAbility::DoesAbilitySatisfyTagRequirements(const UAbilitySyste
 	const FGameplayTag& MissingTag = AbilitySystemGlobals.ActivateFailTagsMissingTag;
 
 	// Check if any of this ability's tags are currently blocked
-	if (AbilitySystemComponent.AreAbilityTagsBlocked(AbilityTags))
+	if (AbilitySystemComponent.AreAbilityTagsBlocked(GetAssetTags()))
 	{
 		bBlocked = true;
 	}
@@ -79,7 +79,7 @@ bool UKaosGameplayAbility::DoesAbilitySatisfyTagRequirements(const UAbilitySyste
 	// This gets the additional tags from the ASC's relationship mapping for the abilities tags.
 	if (KaosAbilitySystemComponent)
 	{
-		KaosAbilitySystemComponent->GetRelationshipActivationTagRequirements(AbilityTags, AbilityRequiredTags, AbilityBlockedTags);
+		KaosAbilitySystemComponent->GetRelationshipActivationTagRequirements(GetAssetTags(), AbilityRequiredTags, AbilityBlockedTags);
 	}
 
 	/*
@@ -298,7 +298,7 @@ FGameplayTagContainer UKaosGameplayAbility::K2_GetCooldownTags() const
 
 FGameplayTagContainer UKaosGameplayAbility::GetAbilityTags() const
 {
-	return AbilityTags;
+	return GetAssetTags();
 }
 
 bool UKaosGameplayAbility::DoesTargetHaveTags(const AActor* Target, const FGameplayTagContainer& Tags) const
@@ -329,15 +329,13 @@ void UKaosGameplayAbility::NotifyFailedToActivatePassiveAbility() const
 
 bool UKaosGameplayAbility::IsAbilityBlockedByTags(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo) const
 {
-	return ActorInfo ? ActorInfo->AbilitySystemComponent->AreAbilityTagsBlocked(AbilityTags) : false;
+	return ActorInfo ? ActorInfo->AbilitySystemComponent->AreAbilityTagsBlocked(GetAssetTags()) : false;
 }
 
 void UKaosGameplayAbility::TryActivatePassiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) const
 {
-	const bool bIsPredicting = (Spec.ActivationInfo.ActivationMode == EGameplayAbilityActivationMode::Predicting);
-
 	// Try to activate if activation type is Passive. Passive abilities are auto activated when given.
-	if (ActorInfo && !Spec.IsActive() && !bIsPredicting && IsPassiveAbility())
+	if (ActorInfo && !Spec.IsActive() && IsPassiveAbility())
 	{
 		UAbilitySystemComponent* ASC = ActorInfo->AbilitySystemComponent.Get();
 		const AActor* AvatarActor = ActorInfo->AvatarActor.Get();

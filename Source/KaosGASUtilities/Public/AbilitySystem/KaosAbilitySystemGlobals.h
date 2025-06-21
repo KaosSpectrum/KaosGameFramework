@@ -37,7 +37,7 @@ class KAOSGASUTILITIES_API UKaosAbilitySystemGlobals : public UAbilitySystemGlob
 public:
 	static UKaosAbilitySystemGlobals& Get() { return *Cast<UKaosAbilitySystemGlobals>(IGameplayAbilitiesModule::Get().GetAbilitySystemGlobals()); }
 	
-	TArray<FSoftObjectPath> GetCurveInitTables() const { return GlobalAttributeSetDefaultsTableNames; }
+	TArray<FSoftObjectPath> GetCurveInitTables() const { return GetGlobalAttributeSetDefaultsTablePaths(); }
 
 	FKaosAttributeSetInitter* GetKaosAttributeSetInitter() const;
 

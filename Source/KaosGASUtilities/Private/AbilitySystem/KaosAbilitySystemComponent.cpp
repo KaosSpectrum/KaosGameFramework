@@ -232,7 +232,7 @@ void UKaosAbilitySystemComponent::CancelAbilityWithAllTags(const FGameplayTagCon
 		}
 
 		//If tags match, cancel the ability
-		if (AbilitySpec.Ability->AbilityTags.HasAll(GameplayAbilityTags) && AbilitySpec.IsActive())
+		if (AbilitySpec.Ability->GetAssetTags().HasAll(GameplayAbilityTags) && AbilitySpec.IsActive())
 		{
 			CancelAbilityHandle(AbilitySpec.Handle);
 		}
@@ -252,7 +252,7 @@ bool UKaosAbilitySystemComponent::IsAbilityOnCooldownWithAllTags(const FGameplay
 		}
 
 		//If tags match, check if the cooldown tags are applied to the ASC.
-		if (AbilitySpec.Ability->AbilityTags.HasAll(GameplayAbilityTags))
+		if (AbilitySpec.Ability->GetAssetTags().HasAll(GameplayAbilityTags))
 		{
 			const FGameplayTagContainer* CooldownTags = AbilitySpec.Ability->GetCooldownTags();
 			if (CooldownTags && CooldownTags->Num() > 0 && HasAnyMatchingGameplayTags(*CooldownTags))
@@ -276,7 +276,7 @@ bool UKaosAbilitySystemComponent::HasAbilityWithAllTags(const FGameplayTagContai
 		}
 
 		//If tags match then we have the ability
-		if (AbilitySpec.Ability->AbilityTags.HasAll(GameplayAbilityTags))
+		if (AbilitySpec.Ability->GetAssetTags().HasAll(GameplayAbilityTags))
 		{
 			return true;
 		}
@@ -298,7 +298,7 @@ bool UKaosAbilitySystemComponent::CanActivateAbilityWithAllMatchingTags(const FG
 		}
 
 		//If tags match and we can activate, return the call to CanActivateAbility.
-		if (Spec.Ability->AbilityTags.HasAll(GameplayAbilityTags))
+		if (Spec.Ability->GetAssetTags().HasAll(GameplayAbilityTags))
 		{
 			return Spec.Ability->CanActivateAbility(Spec.Handle, ActorInfo, nullptr, nullptr, &OutFailureTags);
 		}
@@ -319,7 +319,7 @@ FGameplayAbilitySpec* UKaosAbilitySystemComponent::FindAbilitySpecFromTag(FGamep
 {
 	for (FGameplayAbilitySpec& Spec : ActivatableAbilities.Items)
 	{
-		if (Spec.Ability->AbilityTags.HasTagExact(Tag))
+		if (Spec.Ability->GetAssetTags().HasTagExact(Tag))
 		{
 			return &Spec;
 		}
@@ -374,8 +374,8 @@ bool UKaosAbilitySystemComponent::IsAbilityActiveByTags(const FGameplayTagContai
 			continue;
 		}
 
-		const bool WithTagPass = (!WithTags || Spec.Ability->AbilityTags.HasAny(*WithTags));
-		const bool WithoutTagPass = (!WithoutTags || !Spec.Ability->AbilityTags.HasAny(*WithoutTags));
+		const bool WithTagPass = (!WithTags || Spec.Ability->GetAssetTags().HasAny(*WithTags));
+		const bool WithoutTagPass = (!WithoutTags || !Spec.Ability->GetAssetTags().HasAny(*WithoutTags));
 
 		if (WithTagPass && WithoutTagPass)
 		{
@@ -395,7 +395,7 @@ bool UKaosAbilitySystemComponent::HasActiveAbilityWithAnyMatchingTag(const FGame
 			continue;
 		}
 
-		if (Spec.Ability->AbilityTags.HasAny(Tags) && Spec.IsActive())
+		if (Spec.Ability->GetAssetTags().HasAny(Tags) && Spec.IsActive())
 		{
 			return true;
 		}
@@ -413,7 +413,7 @@ bool UKaosAbilitySystemComponent::HasActiveAbilityWithAllMatchingTag(const FGame
 			continue;
 		}
 
-		if (Spec.Ability->AbilityTags.HasAll(Tags) && Spec.IsActive())
+		if (Spec.Ability->GetAssetTags().HasAll(Tags) && Spec.IsActive())
 		{
 			return true;
 		}
@@ -432,7 +432,7 @@ bool UKaosAbilitySystemComponent::CanActivateAbilityWithAnyMatchingTag(const FGa
 			continue;
 		}
 
-		if (Spec.Ability->AbilityTags.HasAny(GameplayAbilityTags) && Spec.Ability->CanActivateAbility(Spec.Handle, ActorInfo))
+		if (Spec.Ability->GetAssetTags().HasAny(GameplayAbilityTags) && Spec.Ability->CanActivateAbility(Spec.Handle, ActorInfo))
 		{
 			return true;
 		}
@@ -451,7 +451,7 @@ bool UKaosAbilitySystemComponent::CanActivateAbilityWithAllMatchingTag(const FGa
 			continue;
 		}
 
-		if (Spec.Ability->AbilityTags.HasAll(GameplayAbilityTags) && Spec.Ability->CanActivateAbility(Spec.Handle, ActorInfo))
+		if (Spec.Ability->GetAssetTags().HasAll(GameplayAbilityTags) && Spec.Ability->CanActivateAbility(Spec.Handle, ActorInfo))
 		{
 			return true;
 		}

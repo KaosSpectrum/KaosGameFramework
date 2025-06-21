@@ -21,9 +21,64 @@
 #include "AbilitySystem/KaosUtilitiesBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
+#include "AbilitySystemLog.h"
 #include "KaosUtilitiesLogging.h"
 #include "GameplayEffect.h"
 #include "Logging/StructuredLog.h"
+
+
+FKaosGameplayAttributeChangedEventWrapperSpec::FKaosGameplayAttributeChangedEventWrapperSpec(UAbilitySystemComponent* AbilitySystemComponent,
+	FOnKaosGameplayAttributeChangedEventWrapperSignature InGameplayAttributeChangedEventWrapperDelegate)
+	: AbilitySystemComponentWk(AbilitySystemComponent)
+	, GameplayAttributeChangedEventWrapperDelegate(InGameplayAttributeChangedEventWrapperDelegate)
+{
+}
+
+FKaosGameplayAttributeChangedEventWrapperSpec::~FKaosGameplayAttributeChangedEventWrapperSpec()
+{
+	const int32 RemainingDelegateBindingsCount = DelegateBindings.Num();
+	if (RemainingDelegateBindingsCount > 0)
+	{
+		// We still have delegates bound to the ASC - we need to warn the user!
+		// We expect the user to unbind delegates they bound.
+
+		// The exception is if the ASC itself is not valid which indicates things are tearing down - in that case, we'll give them a pass since it's a moot point that
+		//  we are still bound if the ASC isn't around anymore.
+		UAbilitySystemComponent* AbilitySystemComponent = AbilitySystemComponentWk.Get();
+		if (IsValid(AbilitySystemComponent))
+		{
+			ABILITY_LOG(
+				Error, 
+				TEXT("~FKaosGameplayAttributeChangedEventWrapperSpec: our bound spec is being destroyed but we still have %d delegate bindings bound to the ASC on '%s'! Please cache off the Bound delegate handle and unbind it when finished."),
+				RemainingDelegateBindingsCount,
+				*GetNameSafe(AbilitySystemComponent->GetOwner()));
+		}
+	}
+}
+
+
+FKaosGameplayAttributeChangedEventWrapperSpecHandle::FKaosGameplayAttributeChangedEventWrapperSpecHandle()
+	: Data(nullptr)
+{
+}
+
+FKaosGameplayAttributeChangedEventWrapperSpecHandle::FKaosGameplayAttributeChangedEventWrapperSpecHandle(FKaosGameplayAttributeChangedEventWrapperSpec* DataPtr)
+	: Data(DataPtr)
+{
+}
+
+bool FKaosGameplayAttributeChangedEventWrapperSpecHandle::operator==(FKaosGameplayAttributeChangedEventWrapperSpecHandle const& Other) const
+{
+	const bool bBothValid = Data.IsValid() && Other.Data.IsValid();
+	const bool bBothInvalid = !Data.IsValid() && !Other.Data.IsValid();
+	return (bBothInvalid || (bBothValid && (Data.Get() == Other.Data.Get())));
+}
+
+bool FKaosGameplayAttributeChangedEventWrapperSpecHandle::operator!=(FKaosGameplayAttributeChangedEventWrapperSpecHandle const& Other) const
+{
+	return !(operator==(Other));
+}
+
 
 bool UKaosUtilitiesBlueprintLibrary::CanActivateAbilityWithMatchingTags(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayTagContainer& GameplayAbilityTags)
 {
@@ -45,7 +100,7 @@ bool UKaosUtilitiesBlueprintLibrary::CanActivateAbilityWithMatchingTags(UAbility
 			}
 
 			//If tags match and we can activate, return the call to CanActivateAbility.
-			if (Spec.Ability->AbilityTags.HasAll(GameplayAbilityTags))
+			if (Spec.Ability->GetAssetTags().HasAll(GameplayAbilityTags))
 			{
 				return Spec.Ability->CanActivateAbility(Spec.Handle, ActorInfo);
 			}
@@ -74,7 +129,7 @@ bool UKaosUtilitiesBlueprintLibrary::HasActiveAbilityWithMatchingTags(UAbilitySy
 			}
 
 			//If tags match then we have the ability.
-			if (Spec.Ability->AbilityTags.HasAll(GameplayAbilityTags) && Spec.IsActive())
+			if (Spec.Ability->GetAssetTags().HasAll(GameplayAbilityTags) && Spec.IsActive())
 			{
 				return Spec.Ability->CanActivateAbility(Spec.Handle, ActorInfo);
 			}
@@ -100,7 +155,7 @@ void UKaosUtilitiesBlueprintLibrary::CancelAbilityWithAllTags(UAbilitySystemComp
 			}
 
 			//If tags match, cancel the ability
-			if (Spec.Ability->AbilityTags.HasAll(GameplayAbilityTags) && Spec.IsActive())
+			if (Spec.Ability->GetAssetTags().HasAll(GameplayAbilityTags) && Spec.IsActive())
 			{
 				AbilitySystemComponent->CancelAbilityHandle(Spec.Handle);
 			}
@@ -125,7 +180,7 @@ bool UKaosUtilitiesBlueprintLibrary::HasAbilityWithAllTags(UAbilitySystemCompone
 			}
 
 			//If tags match then we have the ability
-			if (Spec.Ability->AbilityTags.HasAll(GameplayAbilityTags))
+			if (Spec.Ability->GetAssetTags().HasAll(GameplayAbilityTags))
 			{
 				return true;
 			}
@@ -151,7 +206,7 @@ bool UKaosUtilitiesBlueprintLibrary::IsAbilityOnCooldownWithAllTags(UAbilitySyst
 			}
 
 			//If tags match, check if the cooldown tags are applied to the ASC.
-			if (Spec.Ability->AbilityTags.HasAll(GameplayAbilityTags))
+			if (Spec.Ability->GetAssetTags().HasAll(GameplayAbilityTags))
 			{
 				const FGameplayTagContainer* CooldownTags = Spec.Ability->GetCooldownTags();
 				if (CooldownTags && CooldownTags->Num() > 0 && AbilitySystemComponent->HasAnyMatchingGameplayTags(*CooldownTags))
@@ -324,7 +379,7 @@ FGameplayAbilitySpec* UKaosUtilitiesBlueprintLibrary::FindAbilitySpecWithAllAbil
 		for (FGameplayAbilitySpec& Spec : Specs)
 		{
 			const bool bMatchesSourceObject = OptionalSourceObject != nullptr ? OptionalSourceObject == Spec.SourceObject.Get() : true;
-			if (Spec.Ability->AbilityTags.HasAll(AbilityTags) && bMatchesSourceObject)
+			if (Spec.Ability->GetAssetTags().HasAll(AbilityTags) && bMatchesSourceObject)
 			{
 				return &Spec;
 			}
@@ -434,4 +489,138 @@ void UKaosUtilitiesBlueprintLibrary::UnblockAbilitiesWithTags(UAbilitySystemComp
 	{
 		AbilitySystemComponent->UnBlockAbilitiesWithTags(GameplayAbilityTags);
 	}
+}
+
+
+FKaosGameplayAttributeChangedEventWrapperSpecHandle UKaosUtilitiesBlueprintLibrary::BindEventWrapperToAttributeChangedKaos(
+	UAbilitySystemComponent* AbilitySystemComponent, FGameplayAttribute Attribute,
+	FOnKaosGameplayAttributeChangedEventWrapperSignature GameplayAttributeChangedEventWrapperDelegate, bool bExecuteForCurrentValueImmediately)
+{
+	if (!::IsValid(AbilitySystemComponent))
+	{
+		return FKaosGameplayAttributeChangedEventWrapperSpecHandle();
+	}
+
+	//TODO: Maybe we shouldn't allow binding..
+	if (!AbilitySystemComponent->HasAttributeSetForAttribute(Attribute))
+	{
+		UE_LOG(LogAbilitySystem, Warning, TEXT("Tried to bind to an attribute that the owner does not have. Will still bind."));
+	}
+
+	FKaosGameplayAttributeChangedEventWrapperSpec* AttributeBindingSpec = new FKaosGameplayAttributeChangedEventWrapperSpec(AbilitySystemComponent, GameplayAttributeChangedEventWrapperDelegate);
+	FKaosGameplayAttributeChangedEventWrapperSpecHandle AttributeBindingHandle(AttributeBindingSpec);
+
+	// Bind to the ASC's attribute change listening delegate (which is not a 'dynamic' delegate and thereby can't be used in BP).
+	const FDelegateHandle AttributeChangedDelegateHandle = AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(Attribute).AddLambda(
+		[GameplayAttributeChangedEventWrapperDelegate]
+		(const FOnAttributeChangeData& ChangeData)
+	{
+		ProcessGameplayAttributeChangedEventWrapper(ChangeData, GameplayAttributeChangedEventWrapperDelegate);
+	});
+
+	AttributeBindingSpec->DelegateBindings.Add(Attribute, AttributeChangedDelegateHandle);
+
+	if (bExecuteForCurrentValueImmediately)
+	{
+		const float CurrentValue = AbilitySystemComponent->GetNumericAttribute(Attribute);
+		GameplayAttributeChangedEventWrapperDelegate.ExecuteIfBound(Attribute, 0.f, CurrentValue);
+	}
+	
+	return AttributeBindingHandle;
+}
+
+FKaosGameplayAttributeChangedEventWrapperSpecHandle UKaosUtilitiesBlueprintLibrary::BindEventWrapperToAnyOfGameplayAttributesChangedKaos(
+	UAbilitySystemComponent* AbilitySystemComponent, const TArray<FGameplayAttribute>& Attributes,
+	FOnKaosGameplayAttributeChangedEventWrapperSignature GameplayAttributeChangedEventWrapperDelegate, bool bExecuteForCurrentValueImmediately)
+{
+	if (!::IsValid(AbilitySystemComponent))
+	{
+		return FKaosGameplayAttributeChangedEventWrapperSpecHandle();
+	}
+
+	FKaosGameplayAttributeChangedEventWrapperSpec* AttributeBindingSpec = new FKaosGameplayAttributeChangedEventWrapperSpec(AbilitySystemComponent, GameplayAttributeChangedEventWrapperDelegate);
+	FKaosGameplayAttributeChangedEventWrapperSpecHandle AttributeBindingHandle(AttributeBindingSpec);
+
+	AttributeBindingSpec->DelegateBindings.Reserve(Attributes.Num());
+
+	// Bind each attribute and add to the DelegateBindings container.
+	for (const FGameplayAttribute& Attribute : Attributes)
+	{
+		//TODO: Maybe we shouldn't allow binding..
+		if (!AbilitySystemComponent->HasAttributeSetForAttribute(Attribute))
+		{
+			UE_LOG(LogAbilitySystem, Warning, TEXT("Tried to bind to an attribute that the owner does not have. Will still bind."));
+		}
+		
+		// Bind to the ASC's attribute change listening delegate (which is not a 'dynamic' delegate and thereby can't be used in BP).
+		const FDelegateHandle AttributeChangedDelegateHandle = AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(Attribute).AddLambda(
+			[GameplayAttributeChangedEventWrapperDelegate]
+			(const FOnAttributeChangeData& ChangeData)
+		{
+			ProcessGameplayAttributeChangedEventWrapper(ChangeData, GameplayAttributeChangedEventWrapperDelegate);
+		});
+
+		AttributeBindingSpec->DelegateBindings.Add(Attribute, AttributeChangedDelegateHandle);
+	}
+
+	if (bExecuteForCurrentValueImmediately)
+	{
+		for (const FGameplayAttribute& Attribute : Attributes)
+		{
+			const float CurrentValue = AbilitySystemComponent->GetNumericAttribute(Attribute);
+			GameplayAttributeChangedEventWrapperDelegate.ExecuteIfBound(Attribute, 0.f, CurrentValue);
+		}
+	}
+
+	return AttributeBindingHandle;
+}
+
+void UKaosUtilitiesBlueprintLibrary::UnbindAllGameplayAttributeChangedEventWrappersForHandleKaos(FKaosGameplayAttributeChangedEventWrapperSpecHandle Handle)
+{
+	FKaosGameplayAttributeChangedEventWrapperSpec* GameplayAttributeChangedEventDataPtr = Handle.Data.Get();
+	if (GameplayAttributeChangedEventDataPtr == nullptr)
+	{
+		return;
+	}
+
+	UAbilitySystemComponent* AbilitySystemComponent = GameplayAttributeChangedEventDataPtr->AbilitySystemComponentWk.Get();
+	if (AbilitySystemComponent == nullptr)
+	{
+		return;
+	}
+
+	for (const auto& [Attribute, BoundHandle] : GameplayAttributeChangedEventDataPtr->DelegateBindings)
+	{
+		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(Attribute).Remove(BoundHandle);
+	}
+
+	GameplayAttributeChangedEventDataPtr->DelegateBindings.Reset();
+}
+
+void UKaosUtilitiesBlueprintLibrary::UnbindGameplayAttributeChangedEventWrapperForHandleKaos(FGameplayAttribute Attribute,
+	FKaosGameplayAttributeChangedEventWrapperSpecHandle Handle)
+{
+	FKaosGameplayAttributeChangedEventWrapperSpec* GameplayAttributeChangedEventDataPtr = Handle.Data.Get();
+	if (GameplayAttributeChangedEventDataPtr == nullptr)
+	{
+		return;
+	}
+
+	UAbilitySystemComponent* AbilitySystemComponent = GameplayAttributeChangedEventDataPtr->AbilitySystemComponentWk.Get();
+	if (AbilitySystemComponent == nullptr)
+	{
+		return;
+	}
+
+	for (auto DelegateBindingIterator = GameplayAttributeChangedEventDataPtr->DelegateBindings.CreateIterator(); DelegateBindingIterator; ++DelegateBindingIterator)
+	{
+		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(DelegateBindingIterator->Key).Remove(DelegateBindingIterator->Value);
+		DelegateBindingIterator.RemoveCurrent();
+	}
+}
+
+void UKaosUtilitiesBlueprintLibrary::ProcessGameplayAttributeChangedEventWrapper(const FOnAttributeChangeData& Attribute,
+	FOnKaosGameplayAttributeChangedEventWrapperSignature GameplayAttributeChangedEventWrapperDelegate)
+{
+	GameplayAttributeChangedEventWrapperDelegate.ExecuteIfBound(Attribute.Attribute, Attribute.OldValue, Attribute.NewValue);
 }

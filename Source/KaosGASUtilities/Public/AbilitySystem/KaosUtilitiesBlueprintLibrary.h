@@ -33,6 +33,43 @@ class UKaosGameplayAbilitySet;
 class UGameplayAbility;
 class UAbilitySystemComponent;
 
+/** Called when a gameplay attribute bound to an event wrapper via one of the BindEventWrapper<Attribute> methods on the AbilitySystemLibrary changes. */
+DECLARE_DYNAMIC_DELEGATE_ThreeParams(FOnKaosGameplayAttributeChangedEventWrapperSignature, const FGameplayAttribute&, Attribute, float, OldValue, float, NewValue);
+
+/** Holds tracking data for gameplay attribute changed event wrappers that have been bound. */
+struct FKaosGameplayAttributeChangedEventWrapperSpec
+{
+	FKaosGameplayAttributeChangedEventWrapperSpec(
+		UAbilitySystemComponent* AbilitySystemComponent,
+		FOnKaosGameplayAttributeChangedEventWrapperSignature InGameplayAttributeChangedEventWrapperDelegate);
+	~FKaosGameplayAttributeChangedEventWrapperSpec();
+
+	/** The AbilitySystemComponent this spec is bound to. */
+	TWeakObjectPtr<UAbilitySystemComponent> AbilitySystemComponentWk;
+
+	/** The event wrapper delegate cached off, to be executed when the gameplay attribute we care about changes. */
+	FOnKaosGameplayAttributeChangedEventWrapperSignature GameplayAttributeChangedEventWrapperDelegate;
+
+	/** Map of the respective gameplay attribute to the delegate handle the ASC gave us to use for unbinding later. */
+	TMap<FGameplayAttribute, FDelegateHandle> DelegateBindings;
+};
+
+/** Handle to a event wrapper listening for gameplay attribute change(s) via one of the BindEventWrapper<to attribute(s)> methods on the AbilitySystemLibrary */
+USTRUCT(BlueprintType)
+struct FKaosGameplayAttributeChangedEventWrapperSpecHandle
+{
+	GENERATED_BODY()
+
+	FKaosGameplayAttributeChangedEventWrapperSpecHandle();
+	FKaosGameplayAttributeChangedEventWrapperSpecHandle(FKaosGameplayAttributeChangedEventWrapperSpec* DataPtr);
+
+	/** Internal pointer to binding spec */
+	TSharedPtr<FKaosGameplayAttributeChangedEventWrapperSpec>	Data;
+
+	bool operator==(FKaosGameplayAttributeChangedEventWrapperSpecHandle const& Other) const;
+	bool operator!=(FKaosGameplayAttributeChangedEventWrapperSpecHandle const& Other) const;
+};
+
 /**
  * Collection of helper functions for Gameplay Ability System.
  */
@@ -189,4 +226,65 @@ public:
 	 * has A.1 and C.1, it will return false.
 	 */
 	static FGameplayAbilitySpec* FindAbilitySpecWithAllAbilityTags(UAbilitySystemComponent* AbilitySystemComponent, FGameplayTagContainer GameplayAbilityTags, UObject* OptionalSourceObject = nullptr);
+
+	public:
+	// -------------------------------------------------------------------------------
+	//		Attribute BP change helpers
+	// -------------------------------------------------------------------------------
+
+	/**
+	 * Binds to changes in the given Tag on the given ASC's owned tags.
+	 * Cache off the returned handle and call one of the 'Unbind'...'EventWrapper' fns and pass in the handle when you are finished with the binding.
+	 * @param Attribute                               Attribute to listen for changes on
+	 * @param AbilitySystemComponent                     AbilitySystemComponent owning the Event
+	 * @param GameplayAttributeChangedEventWrapperDelegate Attribute Changed Event to trigger
+	 * @param bExecuteForCurrentValueImmediately   If true, the bound event will immediately execute if we already have the tag.
+	 * @return                                  FKaosGameplayAttributeChangedEventWrapperSpecHandle Handle by which this binding request can be unbound.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Ability|Attribute")
+	static FKaosGameplayAttributeChangedEventWrapperSpecHandle BindEventWrapperToAttributeChangedKaos(
+		UAbilitySystemComponent* AbilitySystemComponent,
+		FGameplayAttribute Attribute, 
+		FOnKaosGameplayAttributeChangedEventWrapperSignature GameplayAttributeChangedEventWrapperDelegate, 
+		bool bExecuteForCurrentValueImmediately = true);
+
+	/**
+	 * Binds to changes in the given Attributes on the given ASC's attribute sets.
+	 * Cache off the returned handle and call one of the 'Unbind'...'EventWrapper' fns and pass in the handle when you are finished with the binding.
+	 * @param Attributes                              TArray of Attributes to listen for changes on
+	 * @param AbilitySystemComponent                     AbilitySystemComponent owning the Event
+	 * @param GameplayAttributeChangedEventWrapperDelegate Attribute Changed Event to trigger
+	 * @param bExecuteForCurrentValueImmediately   If true, we fire the delegate immediately with the current value of the attribute.
+	 * @return                                  FKaosGameplayAttributeChangedEventWrapperSpecHandle Handle by which this binding request can be unbound.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Ability|Attribute")
+	static FKaosGameplayAttributeChangedEventWrapperSpecHandle BindEventWrapperToAnyOfGameplayAttributesChangedKaos(
+		UAbilitySystemComponent* AbilitySystemComponent,
+		const TArray<FGameplayAttribute>& Attributes,
+		FOnKaosGameplayAttributeChangedEventWrapperSignature GameplayAttributeChangedEventWrapperDelegate, 
+		bool bExecuteForCurrentValueImmediately = true);
+
+	/**
+	 * Unbinds the event wrapper attribute change event bound via a BindEventWrapper<to gameplay attribute(s)> method that is tied to the given Handle.
+	 * (expected to unbind 1 or none)
+	 * @param Handle     FKaosGameplayAttributeChangedEventWrapperSpecHandle Handle provided when binding to a delegate
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Ability|Attribute")
+	static void UnbindAllGameplayAttributeChangedEventWrappersForHandleKaos(FKaosGameplayAttributeChangedEventWrapperSpecHandle Handle);
+
+	/**
+	 * Unbinds the event wrapper attribute change event bound via a BindEventWrapper<to gameplay attribute(s)> method that is tied to the given Handle, for the specific attribute.
+	 *  and were bound to the given Attribute.
+	 * (expected to unbind 1 or none, only makes sense to call if the original binding was for listening to multiple attributes.)
+	 * @param Attribute        Gameplay Attribute to unbind from
+	 * @param Handle     	Handle provided when binding to a delegate
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Ability|Attribute")
+	static void UnbindGameplayAttributeChangedEventWrapperForHandleKaos(FGameplayAttribute Attribute, FKaosGameplayAttributeChangedEventWrapperSpecHandle Handle);
+
+protected:
+
+	// Helper fn to process gameplay attribute changed event wrappers.
+	static void ProcessGameplayAttributeChangedEventWrapper(const FOnAttributeChangeData& Attribute, FOnKaosGameplayAttributeChangedEventWrapperSignature GameplayAttributeChangedEventWrapperDelegate);
+
 };

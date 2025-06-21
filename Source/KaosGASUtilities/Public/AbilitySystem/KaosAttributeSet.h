@@ -103,7 +103,7 @@ public:
 	FGameplayEffectContextHandle Context;
 
 	UPROPERTY()
-	UKaosAbilitySystemComponent* SourceASC = nullptr;
+	TObjectPtr<UKaosAbilitySystemComponent> SourceASC = nullptr;
 
 	UPROPERTY()
 	FGameplayTagContainer SourceTags;
@@ -112,16 +112,16 @@ public:
 	FGameplayTagContainer SpecAssetTags;
 
 	UPROPERTY()
-	AActor* TargetAvatarActor = nullptr;
+	TObjectPtr<AActor> TargetAvatarActor = nullptr;
 
 	UPROPERTY()
 	FGameplayTagContainer TargetTags;
 
 	UPROPERTY()
-	AActor* SourceAvatarActor = nullptr;
+	TObjectPtr<AActor> SourceAvatarActor = nullptr;
 
 	UPROPERTY()
-	UObject* SourceObject = nullptr;
+	TObjectPtr<UObject> SourceObject = nullptr;
 };
 
 /*
