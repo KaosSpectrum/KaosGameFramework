@@ -328,6 +328,22 @@ void UKaosUtilitiesBlueprintLibrary::TakeAbilitySet(FKaosAbilitySetHandle& Abili
 	AbilitySetHandle.RemoveSet();
 }
 
+void UKaosUtilitiesBlueprintLibrary::RemoveAllAbilitySetsFromInterface(TScriptInterface<IAbilitySystemInterface> AbilitySystemInterface)
+{
+	UAbilitySystemComponent* ASC = Cast<UAbilitySystemComponent>(AbilitySystemInterface.GetObject());
+	RemoveAllAbilitySets(ASC);
+}
+
+void UKaosUtilitiesBlueprintLibrary::RemoveAllAbilitySets(UAbilitySystemComponent* ASC)
+{
+	if (!ASC || !IsValidChecked(ASC))
+	{
+		UE_LOGFMT(LogKaosUtilities, Warning, "Tried to remove all ability sets with a invalid ASC");
+		return;
+	}
+	UKaosGameplayAbilitySet::RemoveAllAbilitySets(ASC);
+}
+
 int32 UKaosUtilitiesBlueprintLibrary::GetAbilityLevel(const FGameplayEffectContextHandle& EffectContextHandle)
 {
 	return EffectContextHandle.GetAbilityLevel();

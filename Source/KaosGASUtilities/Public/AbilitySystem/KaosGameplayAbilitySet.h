@@ -50,6 +50,7 @@ public:
 protected:
 	KAOSGASUTILITIES_API virtual FKaosAbilitySetHandle GiveAbilitySetTo(UAbilitySystemComponent* ASC, UObject* OverrideSourceObject = nullptr) const;
 	KAOSGASUTILITIES_API virtual FKaosAbilitySetHandle GiveAbilitySetToInterface(TScriptInterface<IAbilitySystemInterface> AbilitySystemInterface, UObject* OverrideSourceObject = nullptr) const;
+	KAOSGASUTILITIES_API static void RemoveAllAbilitySets(UAbilitySystemComponent* ASC);
 
 	// Gameplay abilities to grant when this ability set is granted.
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Abilities", meta=(TitleProperty=Ability))

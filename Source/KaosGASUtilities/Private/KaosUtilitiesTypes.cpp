@@ -49,10 +49,14 @@ void FKaosAbilitySetHandle::RemoveSet()
 		}
 	}
 
-	for (UAttributeSet* Set : AttributeSets)
-	{
-		AbilitySystemComponent->RemoveSpawnedAttribute(Set);
-	}
+	// We do NOT remove any spawned sets.
+	// This is because GameplayEffects from other things MIGHT be interacting with them and we CAN NOT
+	// for sure know WHAT and WHY without expensive lookups. Also we might not know in the future.
+	
+	// for (UAttributeSet* Set : AttributeSets)
+	// {
+	// 	AbilitySystemComponent->RemoveSpawnedAttribute(Set);
+	// }
 
 	UE_LOGFMT(LogKaosUtilities, Log, "Removed ability set with handle {Handle}", HandleId);
 	Reset();
@@ -74,7 +78,3 @@ void FKaosAbilitySetHandle::AddGameplayEffectHandle(const FActiveGameplayEffectH
 	}
 }
 
-void FKaosAbilitySetHandle::AddAttributeSet(UAttributeSet* Set)
-{
-	AttributeSets.Add(Set);
-}

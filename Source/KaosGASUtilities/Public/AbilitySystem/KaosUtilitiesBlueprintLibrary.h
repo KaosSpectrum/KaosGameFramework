@@ -191,6 +191,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category="KaosGAS")
 	static void TakeAbilitySet(UPARAM(ref) FKaosAbilitySetHandle& AbilitySetHandle);
 
+	//Removes all Ability sets, but does not invalidate any handles.
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category=AbilitySet)
+	static void RemoveAllAbilitySetsFromInterface(TScriptInterface<IAbilitySystemInterface> AbilitySystemInterface);
+
+	/*
+	 * Removes all Ability sets, but does not invalidate any handles.
+	 * Does NOT remove any attribute sets. Infact Attribute Set removal is not allowed with Set removals.
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category=AbilitySet)
+	static void RemoveAllAbilitySets(UAbilitySystemComponent* ASC);
+	
 	/**
 	 * Returns the level of the ability the context was applied with
 	 */

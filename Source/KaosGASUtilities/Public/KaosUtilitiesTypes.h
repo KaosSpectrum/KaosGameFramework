@@ -117,7 +117,6 @@ private:
 
 	void AddAbilitySpecHandle(const FGameplayAbilitySpecHandle& Handle);
 	void AddGameplayEffectHandle(const FActiveGameplayEffectHandle& Handle);
-	void AddAttributeSet(UAttributeSet* Set);
 
 	// Handles to the granted abilities.
 	UPROPERTY()
@@ -126,11 +125,7 @@ private:
 	// Handles to the granted gameplay effects.
 	UPROPERTY()
 	TArray<FActiveGameplayEffectHandle> GameplayEffectHandles;
-
-	// Attribute Sets
-	UPROPERTY()
-	TArray<TObjectPtr<UAttributeSet>> AttributeSets;
-
+	
 	int32 HandleId = 0;
 
 	TWeakObjectPtr<UAbilitySystemComponent> AbilitySystemComponent = nullptr;

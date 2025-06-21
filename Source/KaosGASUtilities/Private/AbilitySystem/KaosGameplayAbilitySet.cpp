@@ -22,7 +22,13 @@
 #include "AbilitySystemComponent.h"
 #include "GameplayEffect.h"
 #include "KaosUtilitiesLogging.h"
+#include "NativeGameplayTags.h"
 #include "Abilities/GameplayAbility.h"
+
+namespace ShooterAbilitySetTags
+{
+	UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Gameplay_Source_AbilitySet, "Gameplay.Source.AbilitySet");
+}
 
 namespace AresAbilitySetHandle_Impl
 {
@@ -97,10 +103,16 @@ FKaosAbilitySetHandle UKaosGameplayAbilitySet::GiveAbilitySetTo(UAbilitySystemCo
 			continue;
 		}
 
+		//They already have the attribute set. Don't give it again.
+		// AddSpawnedAttribute WILL handle this, but we have constructed an object that will just get GC'd
+		// kind of pointless if we can just catch this now.
+		if (ASC->GetAttributeSet(Set.AttributeSet))
+		{
+			continue;
+		}
+		
 		UAttributeSet* NewSet = NewObject<UAttributeSet>(ASC->GetOwner(), Set.AttributeSet);
 		ASC->AddSpawnedAttribute(NewSet);
-
-		OutHandle.AddAttributeSet(NewSet);
 	}
 
 	return OutHandle;
@@ -109,5 +121,30 @@ FKaosAbilitySetHandle UKaosGameplayAbilitySet::GiveAbilitySetTo(UAbilitySystemCo
 FKaosAbilitySetHandle UKaosGameplayAbilitySet::GiveAbilitySetToInterface(TScriptInterface<IAbilitySystemInterface> AbilitySystemInterface, UObject* OverrideSourceObject) const
 {
 	UAbilitySystemComponent* AresASC = Cast<UAbilitySystemComponent>(AbilitySystemInterface.GetObject());
-	return GiveAbilitySetTo(AresASC, OverrideSourceObject);
+	if (AresASC && IsValidChecked(AresASC))
+	{
+		return GiveAbilitySetTo(AresASC, OverrideSourceObject);
+	}
+	return FKaosAbilitySetHandle();
+}
+
+void UKaosGameplayAbilitySet::RemoveAllAbilitySets(UAbilitySystemComponent* ASC)
+{
+	check (ASC)
+	
+	if (!ASC->IsOwnerActorAuthoritative())
+	{
+		return;
+	}
+	
+	for (const FGameplayAbilitySpec& Spec : ASC->GetActivatableAbilities())
+	{
+		if (Spec.GetDynamicSpecSourceTags().HasTag(ShooterAbilitySetTags::TAG_Gameplay_Source_AbilitySet))
+		{
+			ASC->ClearAbility(Spec.Handle);
+		}
+	}
+	
+	FGameplayEffectQuery Query = FGameplayEffectQuery::MakeQuery_MatchAnyEffectTags(FGameplayTagContainer(ShooterAbilitySetTags::TAG_Gameplay_Source_AbilitySet));
+	ASC->RemoveActiveEffects(Query);
 }
