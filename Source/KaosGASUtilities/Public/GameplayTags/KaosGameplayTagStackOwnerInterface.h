@@ -26,7 +26,7 @@
 #include "KaosGameplayTagStackOwnerInterface.generated.h"
 
 UINTERFACE(MinimalAPI)
-class KAOSGASUTILITIES_API UKaosGameplayTagStackOwnerInterface : public UInterface
+class UKaosGameplayTagStackOwnerInterface : public UInterface
 {
 	GENERATED_BODY()
 };
