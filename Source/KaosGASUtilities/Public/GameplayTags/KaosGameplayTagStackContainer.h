@@ -77,7 +77,7 @@ struct FNetDeltaSerializeInfo;
  * Represents one stack of a gameplay tag (tag + count)
  */
 USTRUCT(BlueprintType)
-struct FKaosGameplayTagStack : public FFastArraySerializerItem
+struct KAOSGASUTILITIES_API FKaosGameplayTagStack : public FFastArraySerializerItem
 {
 	GENERATED_BODY()
 
@@ -110,7 +110,7 @@ private:
 
 /** Container of gameplay tag stacks */
 USTRUCT(BlueprintType)
-struct FKaosGameplayTagStackContainer : public FFastArraySerializer
+struct KAOSGASUTILITIES_API FKaosGameplayTagStackContainer : public FFastArraySerializer
 {
 	GENERATED_BODY()
 
