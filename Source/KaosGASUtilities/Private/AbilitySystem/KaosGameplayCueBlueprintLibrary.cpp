@@ -20,73 +20,22 @@
 
 #include "AbilitySystem/KaosGameplayCueBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
+#include "GameplayCueManager.h"
 #include "AbilitySystemGlobals.h"
 
-void UKaosGameplayCueBlueprintLibrary::AddGameplayCueLocal(AActor* Target, const FGameplayTag& GameplayCueTag, const FGameplayCueParameters& CueParameters)
+void UKaosGameplayCueBlueprintLibrary::AddGameplayCueLocal(AActor* Target, FGameplayTag GameplayCueTag, const FGameplayCueParameters& CueParameters)
 {
-	if (!Target)
-	{
-		return;
-	}
-
-	UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Target);
-	if (!ASC)
-	{
-		return;
-	}
-
-	const FStructProperty* ActiveGameplayCuesStructProp = CastField<FStructProperty>(FActiveGameplayCueContainer::StaticStruct()->FindPropertyByName("ActiveGameplayCues"));
-	if (ActiveGameplayCuesStructProp)
-	{
-		FActiveGameplayCueContainer* ActiveGameplayCueContainer = ActiveGameplayCuesStructProp->ContainerPtrToValuePtr<FActiveGameplayCueContainer>(ASC);
-		if (ActiveGameplayCueContainer)
-		{
-			ActiveGameplayCueContainer->AddCue(GameplayCueTag, FPredictionKey(), CueParameters);
-			ASC->InvokeGameplayCueEvent(GameplayCueTag, EGameplayCueEvent::OnActive, CueParameters);
-			ASC->InvokeGameplayCueEvent(GameplayCueTag, EGameplayCueEvent::WhileActive, CueParameters);
-		}
-	}
+	UGameplayCueManager::AddGameplayCue_NonReplicated(Target, GameplayCueTag, CueParameters);
 }
 
-void UKaosGameplayCueBlueprintLibrary::RemoveGameplayCueLocal(AActor* Target, const FGameplayTag& GameplayCueTag, const FGameplayCueParameters& CueParameters)
+void UKaosGameplayCueBlueprintLibrary::RemoveGameplayCueLocal(AActor* Target, FGameplayTag GameplayCueTag, const FGameplayCueParameters& CueParameters)
 {
-	if (!Target)
-	{
-		return;
-	}
-
-	UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Target);
-	if (!ASC)
-	{
-		return;
-	}
-
-	const FStructProperty* ActiveGameplayCuesStructProp = CastField<FStructProperty>(FActiveGameplayCueContainer::StaticStruct()->FindPropertyByName("ActiveGameplayCues"));
-	if (ActiveGameplayCuesStructProp)
-	{
-		FActiveGameplayCueContainer* ActiveGameplayCueContainer = ActiveGameplayCuesStructProp->ContainerPtrToValuePtr<FActiveGameplayCueContainer>(ASC);
-		if (ActiveGameplayCueContainer)
-		{
-			ActiveGameplayCueContainer->RemoveCue(GameplayCueTag);
-			ASC->InvokeGameplayCueEvent(GameplayCueTag, EGameplayCueEvent::Removed, CueParameters);
-		}
-	}
+	UGameplayCueManager::RemoveGameplayCue_NonReplicated(Target, GameplayCueTag, CueParameters);
 }
 
-void UKaosGameplayCueBlueprintLibrary::ExecuteGameplayCueLocal(AActor* Target, const FGameplayTag& GameplayCueTag, const FGameplayCueParameters& CueParameters)
+void UKaosGameplayCueBlueprintLibrary::ExecuteGameplayCueLocal(AActor* Target, FGameplayTag GameplayCueTag, const FGameplayCueParameters& CueParameters)
 {
-	if (!Target)
-	{
-		return;
-	}
-
-	UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Target);
-	if (!ASC)
-	{
-		return;
-	}
-
-	ASC->InvokeGameplayCueEvent(GameplayCueTag, EGameplayCueEvent::Executed, CueParameters);
+	UGameplayCueManager::ExecuteGameplayCue_NonReplicated(Target, GameplayCueTag, CueParameters);
 }
 
 void UKaosGameplayCueBlueprintLibrary::BuildCueParametersFromSource(AActor* SourceActor, FGameplayCueParameters& OutCueParameters)
