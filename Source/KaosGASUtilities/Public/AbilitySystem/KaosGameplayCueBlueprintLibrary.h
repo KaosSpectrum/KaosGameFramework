@@ -36,16 +36,16 @@ class KAOSGASUTILITIES_API UKaosGameplayCueBlueprintLibrary : public UBlueprintF
 
 public:
 	/** Add a gameplay cue locally on Target. Experimental. Use with caution. */
-	UFUNCTION(BlueprintCallable, Category="KaosGAS")
-	static void AddGameplayCueLocal(AActor* Target, const FGameplayTag& GameplayCueTag, const FGameplayCueParameters& CueParameters);
+	UFUNCTION(BlueprintCallable, Category="KaosGAS", Meta = (GameplayTagFilter = "GameplayCue"))
+	static void AddGameplayCueLocal(AActor* Target, FGameplayTag GameplayCueTag, const FGameplayCueParameters& CueParameters);
 
 	/** Remove a gameplay cue locally on Target. Experimental. Use with caution.  */
-	UFUNCTION(BlueprintCallable, Category="KaosGAS")
-	static void RemoveGameplayCueLocal(AActor* Target, const FGameplayTag& GameplayCueTag, const FGameplayCueParameters& CueParameters);
+	UFUNCTION(BlueprintCallable, Category="KaosGAS", Meta = (GameplayTagFilter = "GameplayCue"))
+	static void RemoveGameplayCueLocal(AActor* Target, FGameplayTag GameplayCueTag, const FGameplayCueParameters& CueParameters);
 
 	/** Execute a gameplay cue locally on Target */
-	UFUNCTION(BlueprintCallable, Category="KaosGAS")
-	static void ExecuteGameplayCueLocal(AActor* Target, const FGameplayTag& GameplayCueTag, const FGameplayCueParameters& CueParameters);
+	UFUNCTION(BlueprintCallable, Category="KaosGAS", Meta = (GameplayTagFilter = "GameplayCue"))
+	static void ExecuteGameplayCueLocal(AActor* Target, FGameplayTag GameplayCueTag, const FGameplayCueParameters& CueParameters);
 
 	/** Build a gameplay cue params from passed in source actor */
 	UFUNCTION(BlueprintCallable, Category="KaosGAS")
