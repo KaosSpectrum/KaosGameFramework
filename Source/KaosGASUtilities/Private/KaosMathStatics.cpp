@@ -206,6 +206,6 @@ bool UKaosMathStatics::LineIntersect(const FVector2D& L1Start, const FVector2D& 
 
 float UKaosMathStatics::AngleBetweenVectors(const FVector& VectorA, const FVector& VectorB)
 {
-	const float Dot = FVector::DotProduct(VectorA.GetSafeNormal(), VectorB.GetSafeNormal2D());
+	const float Dot = FVector::DotProduct(VectorA.GetSafeNormal(), VectorB.GetSafeNormal());
 	return FMath::Acos(Dot);
 }
