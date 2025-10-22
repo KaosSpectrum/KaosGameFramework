@@ -80,7 +80,7 @@ bool FKaosGameplayAttributeChangedEventWrapperSpecHandle::operator!=(FKaosGamepl
 }
 
 
-bool UKaosUtilitiesBlueprintLibrary::CanActivateAbilityWithMatchingTags(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayTagContainer& GameplayAbilityTags)
+bool UKaosUtilitiesBlueprintLibrary::CanActivateAbilityWithMatchingTags(UAbilitySystemComponent* AbilitySystemComponent, FGameplayTagContainer GameplayAbilityTags)
 {
 	if (AbilitySystemComponent)
 	{
@@ -109,7 +109,7 @@ bool UKaosUtilitiesBlueprintLibrary::CanActivateAbilityWithMatchingTags(UAbility
 	return false;
 }
 
-bool UKaosUtilitiesBlueprintLibrary::HasActiveAbilityWithMatchingTags(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayTagContainer& GameplayAbilityTags)
+bool UKaosUtilitiesBlueprintLibrary::HasActiveAbilityWithMatchingTags(UAbilitySystemComponent* AbilitySystemComponent, FGameplayTagContainer GameplayAbilityTags)
 {
 	if (AbilitySystemComponent)
 	{
@@ -138,7 +138,7 @@ bool UKaosUtilitiesBlueprintLibrary::HasActiveAbilityWithMatchingTags(UAbilitySy
 	return false;
 }
 
-void UKaosUtilitiesBlueprintLibrary::CancelAbilityWithAllTags(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayTagContainer& GameplayAbilityTags)
+void UKaosUtilitiesBlueprintLibrary::CancelAbilityWithAllTags(UAbilitySystemComponent* AbilitySystemComponent, FGameplayTagContainer GameplayAbilityTags)
 {
 	if (AbilitySystemComponent)
 	{
@@ -163,7 +163,7 @@ void UKaosUtilitiesBlueprintLibrary::CancelAbilityWithAllTags(UAbilitySystemComp
 	}
 }
 
-bool UKaosUtilitiesBlueprintLibrary::HasAbilityWithAllTags(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayTagContainer& GameplayAbilityTags)
+bool UKaosUtilitiesBlueprintLibrary::HasAbilityWithAllTags(UAbilitySystemComponent* AbilitySystemComponent, FGameplayTagContainer GameplayAbilityTags)
 {
 	if (AbilitySystemComponent)
 	{
@@ -189,7 +189,7 @@ bool UKaosUtilitiesBlueprintLibrary::HasAbilityWithAllTags(UAbilitySystemCompone
 	return false;
 }
 
-bool UKaosUtilitiesBlueprintLibrary::IsAbilityOnCooldownWithAllTags(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayTagContainer& GameplayAbilityTags, float& TimeRemaining, float& CooldownDuration)
+bool UKaosUtilitiesBlueprintLibrary::IsAbilityOnCooldownWithAllTags(UAbilitySystemComponent* AbilitySystemComponent, FGameplayTagContainer GameplayAbilityTags, float& TimeRemaining, float& CooldownDuration)
 {
 	if (AbilitySystemComponent)
 	{
@@ -491,7 +491,7 @@ bool UKaosUtilitiesBlueprintLibrary::CanApplyAttributeModifiers(UAbilitySystemCo
 	return false;
 }
 
-void UKaosUtilitiesBlueprintLibrary::BlockAbilitiesWithTags(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayTagContainer& GameplayAbilityTags)
+void UKaosUtilitiesBlueprintLibrary::BlockAbilitiesWithTags(UAbilitySystemComponent* AbilitySystemComponent, FGameplayTagContainer GameplayAbilityTags)
 {
 	if (AbilitySystemComponent)
 	{
@@ -499,7 +499,7 @@ void UKaosUtilitiesBlueprintLibrary::BlockAbilitiesWithTags(UAbilitySystemCompon
 	}
 }
 
-void UKaosUtilitiesBlueprintLibrary::UnblockAbilitiesWithTags(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayTagContainer& GameplayAbilityTags)
+void UKaosUtilitiesBlueprintLibrary::UnblockAbilitiesWithTags(UAbilitySystemComponent* AbilitySystemComponent, FGameplayTagContainer GameplayAbilityTags)
 {
 	if (AbilitySystemComponent)
 	{
