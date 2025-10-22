@@ -38,6 +38,7 @@ public:
 
 	virtual void OnTagStackAdded(FGameplayTag Tag, int32 AddedCount) = 0;
 	virtual void OnTagStackChanged(FGameplayTag Tag, int32 PreviousCount, int32 NewCount) = 0;
-	virtual void OnTagStackRemoved(FGameplayTag Tag, int32 RemovedCount) = 0;
+	virtual void OnTagStackRemoved(FGameplayTag Tag, int32 PreviousCount, int32 NewCount) = 0;
+	virtual void ForceReplication() = 0;
 
 };
