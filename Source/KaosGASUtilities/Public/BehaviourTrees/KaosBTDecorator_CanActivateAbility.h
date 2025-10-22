@@ -46,6 +46,6 @@ protected:
 	FBlackboardKeySelector ActorForAbilityActivation;
 
 	/** Tag for ability to check if we can activate */
-	UPROPERTY(EditAnywhere, Category=CanActivateAbility)
+	UPROPERTY(EditAnywhere, Category=CanActivateAbility, meta=(Categories="AbilityTagCategory"))
 	FGameplayTag AbilityTag;
 };
