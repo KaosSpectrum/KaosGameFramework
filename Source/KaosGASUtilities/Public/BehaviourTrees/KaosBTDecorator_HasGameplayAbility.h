@@ -45,6 +45,6 @@ protected:
 	FBlackboardKeySelector TargetActorKey;
 
 	/** Tag of the ability we want to see if they have */
-	UPROPERTY(EditAnywhere, Category=HasGameplayAbility)
+	UPROPERTY(EditAnywhere, Category=HasGameplayAbility, meta=(Categories="AbilityTagCategory"))
 	FGameplayTag AbilityTag;
 };
