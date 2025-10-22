@@ -51,7 +51,7 @@ public:
 
 protected:
 	/** Ability to activate */
-	UPROPERTY(EditAnywhere, Category=ActivateAbilityByTag)
+	UPROPERTY(EditAnywhere, Category=ActivateAbilityByTag, meta=(Categories="AbilityTagCategory"))
 	FGameplayTag AbilityToActivate;
 
 	/** Target to activate ability on (normally self) */
