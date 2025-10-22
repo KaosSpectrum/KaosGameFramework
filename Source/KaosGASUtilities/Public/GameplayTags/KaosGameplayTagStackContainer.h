@@ -59,7 +59,7 @@ struct FNetDeltaSerializeInfo;
  *         Container.SetOwner(this);
  *     }
  *
- *     // The owner must implement the IDominanceGameplayTagStackOwnerInterface
+ *     // The owner must implement the IKaosGameplayTagStackOwnerInterface
  *
  * 4. Reacting to changes:
  *     The container automatically notifies its owner (on both server and client)
@@ -77,7 +77,7 @@ struct FNetDeltaSerializeInfo;
  * Represents one stack of a gameplay tag (tag + count)
  */
 USTRUCT(BlueprintType)
-struct KAOSGASUTILITIES_API FKaosGameplayTagStack : public FFastArraySerializerItem
+struct FKaosGameplayTagStack : public FFastArraySerializerItem
 {
 	GENERATED_BODY()
 
@@ -98,19 +98,19 @@ struct KAOSGASUTILITIES_API FKaosGameplayTagStack : public FFastArraySerializerI
 private:
 	friend FKaosGameplayTagStackContainer;
 
-	UPROPERTY()
+	UPROPERTY(SaveGame)
 	FGameplayTag Tag;
 	
-	UPROPERTY()
+	UPROPERTY(SaveGame)
 	int32 StackCount = 0;
 	
-	UPROPERTY()
+	UPROPERTY(SaveGame)
 	int32 PreviousCount = 0;
 };
 
 /** Container of gameplay tag stacks */
 USTRUCT(BlueprintType)
-struct KAOSGASUTILITIES_API FKaosGameplayTagStackContainer : public FFastArraySerializer
+struct FKaosGameplayTagStackContainer : public FFastArraySerializer
 {
 	GENERATED_BODY()
 
@@ -121,10 +121,13 @@ struct KAOSGASUTILITIES_API FKaosGameplayTagStackContainer : public FFastArraySe
 
 public:
 	// Adds a specified number of stacks to the tag (does nothing if StackCount is below 1)
-	void AddStack(FGameplayTag Tag, int32 StackCount);
+	void AddStackCount(FGameplayTag Tag, int32 StackCount);
 
 	// Removes a specified number of stacks from the tag (does nothing if StackCount is below 1)
-	void RemoveStack(FGameplayTag Tag, int32 StackCount);
+	void RemoveStackCount(FGameplayTag Tag, int32 StackCount);
+
+	// Removes the complete stack for a tag.
+	void RemoveStack(FGameplayTag Tag);
 
 	// Returns the stack count of the specified tag (or 0 if the tag is not present)
 	int32 GetStackCount(FGameplayTag Tag) const
@@ -138,13 +141,9 @@ public:
 		return TagToCountMap.Contains(Tag);
 	}
 
-    //Checks to see if a stack count contains child tags
 	bool ContainsTagChildren(FGameplayTag Tag) const;
+	TMap<FGameplayTag, int32> GetStackCountIncludingChildren(FGameplayTag Tag, bool bExcludeParent) const;
 
-    //Returns the stack count including child tags
-	TMap<FGameplayTag, int32> GetStackCountIncludingChildren(FGameplayTag Tag) const;
-
-    //Returns the entire accelerated map.
 	const TMap<FGameplayTag, int32>& GetAllStacks() const
 	{
 		return TagToCountMap;
@@ -172,13 +171,18 @@ public:
 
 private:
 	// Replicated list of gameplay tag stacks
-	UPROPERTY()
+	UPROPERTY(SaveGame)
 	TArray<FKaosGameplayTagStack> Stacks;
 	
 	// Accelerated list of tag int count for queries
+	UPROPERTY(SaveGame, NotReplicated)
 	TMap<FGameplayTag, int32> TagToCountMap;
 
-  //Owner which has the interface IKaosGameplayTagStackOwnerInterface
+	// Accelerated index list on the server of the  FastArray entry to Tag.
+	UPROPERTY(SaveGame, NotReplicated)
+	TMap<FGameplayTag, int32> TagToIndexMap;
+
+	UPROPERTY(SaveGame, NotReplicated)
 	TWeakObjectPtr<UObject> Owner;
 };
 
