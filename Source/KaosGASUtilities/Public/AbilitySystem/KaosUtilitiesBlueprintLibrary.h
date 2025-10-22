@@ -85,7 +85,7 @@ public:
 	 * has A.1 and C.1, it will return false.
 	 */
 	UFUNCTION(BlueprintCallable, Category="KaosGAS")
-	static bool CanActivateAbilityWithMatchingTags(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayTagContainer& GameplayAbilityTags);
+	static bool CanActivateAbilityWithMatchingTags(UAbilitySystemComponent* AbilitySystemComponent, UPARAM(meta=(Categories="AbilityTagCategory")) FGameplayTagContainer GameplayAbilityTags);
 
 	/**
 	 * Check to see if an ability is active with matching tags.
@@ -93,7 +93,7 @@ public:
 	 * has A.1 and C.1, it will return false.
 	 */
 	UFUNCTION(BlueprintCallable, Category="KaosGAS")
-	static bool HasActiveAbilityWithMatchingTags(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayTagContainer& GameplayAbilityTags);
+	static bool HasActiveAbilityWithMatchingTags(UAbilitySystemComponent* AbilitySystemComponent, UPARAM(meta=(Categories="AbilityTagCategory")) FGameplayTagContainer GameplayAbilityTags);
 
 	/**
 	 * Cancels ability with all tags
@@ -101,7 +101,7 @@ public:
 	 * has A.1 and C.1, it will return false.
 	 */
 	UFUNCTION(BlueprintCallable, Category="KaosGAS")
-	static void CancelAbilityWithAllTags(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayTagContainer& GameplayAbilityTags);
+	static void CancelAbilityWithAllTags(UAbilitySystemComponent* AbilitySystemComponent, UPARAM(meta=(Categories="AbilityTagCategory")) FGameplayTagContainer GameplayAbilityTags);
 
 	/**
 	 * Checks to see if we have an ability with all tags.
@@ -109,7 +109,7 @@ public:
 	 * has A.1 and C.1, it will return false.
 	 */
 	UFUNCTION(BlueprintCallable, Category="KaosGAS")
-	static bool HasAbilityWithAllTags(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayTagContainer& GameplayAbilityTags);
+	static bool HasAbilityWithAllTags(UAbilitySystemComponent* AbilitySystemComponent, UPARAM(meta=(Categories="AbilityTagCategory")) FGameplayTagContainer GameplayAbilityTags);
 
 	/**
 	 * Checks to see if ability is on cooldown with all tags.
@@ -117,7 +117,7 @@ public:
 	 * has A.1 and C.1, it will return false.
 	 */
 	UFUNCTION(BlueprintCallable, Category="KaosGAS")
-	static bool IsAbilityOnCooldownWithAllTags(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayTagContainer& GameplayAbilityTags, float& TimeRemaining, float& Duration);
+	static bool IsAbilityOnCooldownWithAllTags(UAbilitySystemComponent* AbilitySystemComponent, UPARAM(meta=(Categories="AbilityTagCategory")) FGameplayTagContainer GameplayAbilityTags, float& TimeRemaining, float& Duration);
 
 	/**
 	 * Returns true if we can activate ability by the supplied class.
@@ -135,7 +135,7 @@ public:
 	 * Returns true if a specific ability tag is blocked by the ASC.
 	 */
 	UFUNCTION(BlueprintCallable, Category="KaosGAS")
-	static bool IsAbilityTagBlocked(UAbilitySystemComponent* AbilitySystemComponent, FGameplayTag AbilityTag);
+	static bool IsAbilityTagBlocked(UAbilitySystemComponent* AbilitySystemComponent, UPARAM(meta=(Categories="AbilityTagCategory")) FGameplayTag AbilityTag);
 
 	/**
 	 * Returns true if an ability is active by the passed in handle
@@ -159,13 +159,13 @@ public:
 	 * Will block abilities with the supplied tags
 	 */
 	UFUNCTION(BlueprintCallable, Category="KaosGAS")
-	static void BlockAbilitiesWithTags(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayTagContainer& GameplayAbilityTags);
+	static void BlockAbilitiesWithTags(UAbilitySystemComponent* AbilitySystemComponent, UPARAM(meta=(Categories="AbilityTagCategory")) FGameplayTagContainer GameplayAbilityTags);
 
 	/**
 	 * Will unblock abilities with the supplied tags. (will affect Gameplay Ability blocking tags!)
 	 */
 	UFUNCTION(BlueprintCallable, Category="KaosGAS")
-	static void UnblockAbilitiesWithTags(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayTagContainer& GameplayAbilityTags);
+	static void UnblockAbilitiesWithTags(UAbilitySystemComponent* AbilitySystemComponent, UPARAM(meta=(Categories="AbilityTagCategory")) FGameplayTagContainer GameplayAbilityTags);
 
 	/**
 	 * Tries to give an ability set to Actor
