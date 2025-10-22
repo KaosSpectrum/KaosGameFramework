@@ -21,51 +21,134 @@
 #include "KaosGameplayTagStackContainer.h"
 #include "GameFramework/Actor.h"
 #include "KaosGameplayTagStackOwnerInterface.h"
+#include "KaosLogging.h"
 #include "GameplayTagsManager.h"
 #include "UObject/Stack.h"
 
-void FKaosGameplayTagStackContainer::AddStack(FGameplayTag Tag, int32 StackCount)
+void FKaosGameplayTagStackContainer::AddStackCount(FGameplayTag Tag, int32 StackCount)
 {
 	if (!Tag.IsValid())
 	{
 		FFrame::KismetExecutionMessage(TEXT("An invalid tag was passed to AddStack"), ELogVerbosity::Warning);
 		return;
 	}
-
+	bool bMarkedAnyDirty = false;
+	
 	if (StackCount > 0)
 	{
-		for (FKaosGameplayTagStack& Stack : Stacks)
+		if (int32* FoundIndex = TagToIndexMap.Find(Tag))
 		{
-			if (Stack.Tag == Tag)
+			FKaosGameplayTagStack& Stack = Stacks[*FoundIndex];
+			Stack.PreviousCount = Stack.StackCount;
+			const int32 NewCount = Stack.StackCount + StackCount;
+			Stack.StackCount = NewCount;
+			TagToCountMap[Tag] = NewCount;
+			if (IKaosGameplayTagStackOwnerInterface* OwnerInterface = Cast<IKaosGameplayTagStackOwnerInterface>(Owner.Get()))
 			{
-				Stack.PreviousCount = Stack.StackCount;
-				const int32 NewCount = Stack.StackCount + StackCount;
-				Stack.StackCount = NewCount;
-				TagToCountMap[Tag] = NewCount;
-				if (IKaosGameplayTagStackOwnerInterface* OwnerInterface = Cast<IKaosGameplayTagStackOwnerInterface>(Owner.Get()))
-				{
-					OwnerInterface->OnTagStackChanged(Tag, Stack.PreviousCount, Stack.StackCount);
-				}
-				MarkItemDirty(Stack);
-				return;
+				OwnerInterface->OnTagStackChanged(Tag, Stack.PreviousCount, Stack.StackCount);
 			}
+			bMarkedAnyDirty = true;
+			MarkItemDirty(Stack);
 		}
+		else
+		{
+			int32 NewStackIndex = Stacks.Emplace(Tag, StackCount);
+			if (IKaosGameplayTagStackOwnerInterface* OwnerInterface = Cast<IKaosGameplayTagStackOwnerInterface>(Owner.Get()))
+			{
+				OwnerInterface->OnTagStackAdded(Tag, StackCount);
+			}
+			bMarkedAnyDirty = true;
+			MarkItemDirty(Stacks[NewStackIndex]);
+			TagToCountMap.Add(Tag, StackCount);
+			TagToIndexMap.Add(Tag, NewStackIndex);
+		}
+	}
 
-		FKaosGameplayTagStack& NewStack = Stacks.Emplace_GetRef(Tag, StackCount);
+	if (bMarkedAnyDirty)
+	{
 		if (IKaosGameplayTagStackOwnerInterface* OwnerInterface = Cast<IKaosGameplayTagStackOwnerInterface>(Owner.Get()))
 		{
-			OwnerInterface->OnTagStackAdded(Tag, StackCount);
+			OwnerInterface->ForceReplication();
 		}
-		MarkItemDirty(NewStack);
-		TagToCountMap.Add(Tag, StackCount);
-	}
-	if (AActor* Actor = Cast<AActor>(Owner.Get()))
-	{
-		Actor->FlushNetDormancy();
 	}
 }
 
-void FKaosGameplayTagStackContainer::RemoveStack(FGameplayTag Tag, int32 StackCount)
+void FKaosGameplayTagStackContainer::RemoveStackCount(FGameplayTag Tag, int32 StackCount)
+{
+	if (!Tag.IsValid())
+	{
+		FFrame::KismetExecutionMessage(TEXT("An invalid tag was passed to RemoveStackCount"), ELogVerbosity::Warning);
+		return;
+	}
+
+	if (StackCount <= 0)
+	{
+		return;
+	}
+
+	bool bMarkedAnyDirty = false;
+
+	if (int32* FoundIndexPtr = TagToIndexMap.Find(Tag))
+	{
+		const int32 FoundIndex = *FoundIndexPtr;
+
+		if (!Stacks.IsValidIndex(FoundIndex))
+		{
+			UE_LOG(LogKaos, Warning, TEXT("Tag %s index was invalid during RemoveStackCount; map may be stale."), *Tag.ToString());
+			TagToIndexMap.Remove(Tag);
+			return;
+		}
+
+		FKaosGameplayTagStack& Stack = Stacks[FoundIndex];
+
+		if (Stack.StackCount <= StackCount)
+		{
+			const int32 PreviousCount = Stack.StackCount;
+
+			Stacks.RemoveAtSwap(FoundIndex);
+
+			if (Stacks.IsValidIndex(FoundIndex))
+			{
+				TagToIndexMap[Stacks[FoundIndex].Tag] = FoundIndex;
+			}
+
+			TagToCountMap.Remove(Tag);
+			TagToIndexMap.Remove(Tag);
+
+			if (IKaosGameplayTagStackOwnerInterface* OwnerInterface = Cast<IKaosGameplayTagStackOwnerInterface>(Owner.Get()))
+			{
+				OwnerInterface->OnTagStackRemoved(Tag, PreviousCount, 0);
+			}
+
+			bMarkedAnyDirty = true;
+			MarkArrayDirty();
+		}
+		else
+		{
+			Stack.PreviousCount = Stack.StackCount;
+			Stack.StackCount -= StackCount;
+			TagToCountMap[Tag] = Stack.StackCount;
+
+			if (IKaosGameplayTagStackOwnerInterface* OwnerInterface = Cast<IKaosGameplayTagStackOwnerInterface>(Owner.Get()))
+			{
+				OwnerInterface->OnTagStackChanged(Tag, Stack.PreviousCount, Stack.StackCount);
+			}
+
+			bMarkedAnyDirty = true;
+			MarkItemDirty(Stack);
+		}
+	}
+
+	if (bMarkedAnyDirty)
+	{
+		if (IKaosGameplayTagStackOwnerInterface* OwnerInterface = Cast<IKaosGameplayTagStackOwnerInterface>(Owner.Get()))
+		{
+			OwnerInterface->ForceReplication();
+		}
+	}
+}
+
+void FKaosGameplayTagStackContainer::RemoveStack(FGameplayTag Tag)
 {
 	if (!Tag.IsValid())
 	{
@@ -73,43 +156,41 @@ void FKaosGameplayTagStackContainer::RemoveStack(FGameplayTag Tag, int32 StackCo
 		return;
 	}
 
-	if (StackCount > 0)
+	if (int32* FoundIndexPtr = TagToIndexMap.Find(Tag))
 	{
-		for (auto It = Stacks.CreateIterator(); It; ++It)
-		{
-			FKaosGameplayTagStack& Stack = *It;
-			if (Stack.Tag == Tag)
-			{
-				if (Stack.StackCount <= StackCount)
-				{
-					It.RemoveCurrent();
-					TagToCountMap.Remove(Tag);
-					if (IKaosGameplayTagStackOwnerInterface* OwnerInterface = Cast<IKaosGameplayTagStackOwnerInterface>(Owner.Get()))
-					{
-						OwnerInterface->OnTagStackRemoved(Tag, StackCount);
-					}
-					MarkArrayDirty();
-				}
-				else
-				{
-					Stack.PreviousCount = Stack.StackCount;
-					const int32 NewCount = Stack.StackCount - StackCount;
-					Stack.StackCount = NewCount;
-					TagToCountMap[Tag] = NewCount;
-					if (IKaosGameplayTagStackOwnerInterface* OwnerInterface = Cast<IKaosGameplayTagStackOwnerInterface>(Owner.Get()))
-					{
-						OwnerInterface->OnTagStackChanged(Tag, Stack.PreviousCount, NewCount);
-					}
-					MarkItemDirty(Stack);
-				}
-				return;
-			}
-		}
-	}
+		const int32 FoundIndex = *FoundIndexPtr;
 
-	if (AActor* Actor = Cast<AActor>(Owner.Get()))
-	{
-		Actor->FlushNetDormancy();
+		if (!Stacks.IsValidIndex(FoundIndex))
+		{
+			UE_LOG(LogKaos, Warning, TEXT("Tag %s was not found in the stack container, but was being removed. This is a bug."), *Tag.ToString());
+			TagToIndexMap.Remove(Tag);
+			return;
+		}
+
+		FKaosGameplayTagStack& Stack = Stacks[FoundIndex];
+		const int32 PreviousCount = Stack.StackCount;
+
+		Stacks.RemoveAtSwap(FoundIndex);
+
+		if (Stacks.IsValidIndex(FoundIndex))
+		{
+			TagToIndexMap[Stacks[FoundIndex].Tag] = FoundIndex;
+		}
+
+		TagToCountMap.Remove(Tag);
+		TagToIndexMap.Remove(Tag);
+
+		if (IKaosGameplayTagStackOwnerInterface* OwnerInterface = Cast<IKaosGameplayTagStackOwnerInterface>(Owner.Get()))
+		{
+			OwnerInterface->OnTagStackRemoved(Tag, PreviousCount, 0);
+		}
+
+		MarkArrayDirty();
+
+		if (IKaosGameplayTagStackOwnerInterface* OwnerInterface = Cast<IKaosGameplayTagStackOwnerInterface>(Owner.Get()))
+		{
+			OwnerInterface->ForceReplication();
+		}
 	}
 }
 
@@ -129,12 +210,15 @@ bool FKaosGameplayTagStackContainer::ContainsTagChildren(FGameplayTag Tag) const
 	return false;
 }
 
-TMap<FGameplayTag, int32> FKaosGameplayTagStackContainer::GetStackCountIncludingChildren(FGameplayTag Tag) const
+TMap<FGameplayTag, int32> FKaosGameplayTagStackContainer::GetStackCountIncludingChildren(FGameplayTag Tag, bool bExcludeParent) const
 {
 	TMap<FGameplayTag, int32> Result;
 	UGameplayTagsManager& GameplayTagsManager = UGameplayTagsManager::Get();
 	FGameplayTagContainer Children = GameplayTagsManager.RequestGameplayTagChildren(Tag);
-	Children.AddTagFast(Tag);
+	if (!bExcludeParent)
+	{
+		Children.AddTagFast(Tag);
+	}
 	for (const FGameplayTag& Child : Children)
 	{
 		if (const int32* Count = TagToCountMap.Find(Child))
@@ -154,11 +238,21 @@ void FKaosGameplayTagStackContainer::PreReplicatedRemove(const TArrayView<int32>
 {
 	for (int32 Index : RemovedIndices)
 	{
-		const FGameplayTag Tag = Stacks[Index].Tag;
+		if (!Stacks.IsValidIndex(Index))
+		{
+			continue;
+		}
+		FKaosGameplayTagStack& Stack = Stacks[Index];
+
+		const FGameplayTag Tag = Stack.Tag;
+		const int32 PreviousCount = Stack.StackCount;
+		constexpr int32 NewCount = 0;
+
 		TagToCountMap.Remove(Tag);
+
 		if (IKaosGameplayTagStackOwnerInterface* OwnerInterface = Cast<IKaosGameplayTagStackOwnerInterface>(Owner.Get()))
 		{
-			OwnerInterface->OnTagStackRemoved(Tag, Stacks[Index].StackCount);
+			OwnerInterface->OnTagStackRemoved(Tag, PreviousCount, NewCount);
 		}
 	}
 }
@@ -167,9 +261,16 @@ void FKaosGameplayTagStackContainer::PostReplicatedAdd(const TArrayView<int32> A
 {
 	for (int32 Index : AddedIndices)
 	{
+		if (!Stacks.IsValidIndex(Index))
+		{
+			continue;
+		}
+		
 		FKaosGameplayTagStack& Stack = Stacks[Index];
 		Stack.PreviousCount = Stack.StackCount;
+		
 		TagToCountMap.Add(Stack.Tag, Stack.StackCount);
+		
 		if (IKaosGameplayTagStackOwnerInterface* OwnerInterface = Cast<IKaosGameplayTagStackOwnerInterface>(Owner.Get()))
 		{
 			OwnerInterface->OnTagStackAdded(Stack.Tag, Stacks[Index].StackCount);
@@ -181,9 +282,15 @@ void FKaosGameplayTagStackContainer::PostReplicatedChange(const TArrayView<int32
 {
 	for (int32 Index : ChangedIndices)
 	{
+		if (!Stacks.IsValidIndex(Index))
+		{
+			continue;
+		}
+		
 		FKaosGameplayTagStack& Stack = Stacks[Index];
 		TagToCountMap[Stack.Tag] = Stack.StackCount;
 		Stack.PreviousCount = Stack.StackCount;
+		
 		if (IKaosGameplayTagStackOwnerInterface* OwnerInterface = Cast<IKaosGameplayTagStackOwnerInterface>(Owner.Get()))
 		{
 			OwnerInterface->OnTagStackChanged(Stack.Tag, Stacks[Index].PreviousCount, Stacks[Index].StackCount);
