@@ -95,19 +95,19 @@ public:
 	bool IsAbilityActiveByTags(const FGameplayTagContainer* WithTags = nullptr, const FGameplayTagContainer* WithoutTags = nullptr, UGameplayAbility* Ignore = nullptr);
 
 	/** Do we have an activate ability with any matching tags */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, meta=(Categories="AbilityTagCategory"))
 	bool HasActiveAbilityWithAnyMatchingTag(const FGameplayTagContainer GameplayAbilityTags);
 
 	/** Do we have an activate ability with all matching tags */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, meta=(Categories="AbilityTagCategory"))
 	bool HasActiveAbilityWithAllMatchingTag(const FGameplayTagContainer GameplayAbilityTags);
 
 	/** Can we activate an ability with any matching tags */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, meta=(Categories="AbilityTagCategory"))
 	bool CanActivateAbilityWithAnyMatchingTag(const FGameplayTagContainer GameplayAbilityTags);
 
 	/** Can we activate an ability with all matching tags */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, meta=(Categories="AbilityTagCategory"))
 	bool CanActivateAbilityWithAllMatchingTag(const FGameplayTagContainer GameplayAbilityTags);
 
 	/** Do we have this attribute set? */
@@ -119,19 +119,19 @@ public:
 	bool IsAbilityTagBlocked(FGameplayTag AbilityTag);
 
 	/** Cancel abilitiy with all the supplied tags */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, meta=(Categories="AbilityTagCategory"))
 	void CancelAbilityWithAllTags(const FGameplayTagContainer GameplayAbilityTags);
 
 	/** Is ability on cooldown with all the tags */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, meta=(Categories="AbilityTagCategory"))
 	bool IsAbilityOnCooldownWithAllTags(const FGameplayTagContainer GameplayAbilityTags);
 
 	/** Have we got this ability with all the supplied tags */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, meta=(Categories="AbilityTagCategory"))
 	bool HasAbilityWithAllTags(const FGameplayTagContainer GameplayAbilityTags);
 
 	/** Can we activate the ability with all the supplied matching tags */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, meta=(Categories="AbilityTagCategory"))
 	bool CanActivateAbilityWithAllMatchingTags(const FGameplayTagContainer GameplayAbilityTags, FGameplayTagContainer& OutFailureTags);
 
 protected:
