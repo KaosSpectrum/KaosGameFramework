@@ -62,7 +62,7 @@ protected:
 	FBlackboardKeySelector TargetActorKey;
 
 	/** Tag of the ability we want to activate */
-	UPROPERTY(EditAnywhere, Category=ExecuteGameplayAbility)
+	UPROPERTY(EditAnywhere, Category=ExecuteGameplayAbility, meta=(Categories="AbilityTagCategory"))
 	FGameplayTag AbilityToActivate;
 
 	/** What do we do if this task is aborted */
