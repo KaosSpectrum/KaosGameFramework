@@ -48,11 +48,11 @@ public:
 	void GetAbilityTargetData(FGameplayAbilitySpecHandle AbilityHandle, FGameplayAbilityActivationInfo ActivationInfo, FGameplayAbilityTargetDataHandle& OutTargetDataHandle) const;
 
 	/** Allow blueprints to unblock abilities */
-	UFUNCTION(BlueprintCallable, DisplayName = "UnBlock Abilities With Tags")
+	UFUNCTION(BlueprintCallable, DisplayName = "UnBlock Abilities With Tags", meta=(Categories="AbilityTagCategory"))
 	void K2_UnBlockAbilitiesWithTags(UPARAM(ref) FGameplayTagContainer& Tags);
 
 	/** Allow blueprints to block abilities */
-	UFUNCTION(BlueprintCallable, DisplayName = "Block Abilities With Tags")
+	UFUNCTION(BlueprintCallable, DisplayName = "Block Abilities With Tags", meta=(Categories="AbilityTagCategory"))
 	void K2_BlockAbilitiesWithTags(UPARAM(ref) FGameplayTagContainer& Tags);
 
 	/** Return a mutable pointer to the ActiveGameplayEffect from the supplied handle. */
