@@ -18,10 +18,10 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#include "KaosGameplayTagStackContainer.h"
+#include "GameplayTags/KaosGameplayTagStackContainer.h"
 #include "GameFramework/Actor.h"
-#include "KaosGameplayTagStackOwnerInterface.h"
-#include "KaosLogging.h"
+#include "GameplayTags/KaosGameplayTagStackOwnerInterface.h"
+#include "KaosUtilitiesLogging.h"
 #include "GameplayTagsManager.h"
 #include "UObject/Stack.h"
 
@@ -94,7 +94,7 @@ void FKaosGameplayTagStackContainer::RemoveStackCount(FGameplayTag Tag, int32 St
 
 		if (!Stacks.IsValidIndex(FoundIndex))
 		{
-			UE_LOG(LogKaos, Warning, TEXT("Tag %s index was invalid during RemoveStackCount; map may be stale."), *Tag.ToString());
+			UE_LOG(LogKaosUtilities, Warning, TEXT("Tag %s index was invalid during RemoveStackCount; map may be stale."), *Tag.ToString());
 			TagToIndexMap.Remove(Tag);
 			return;
 		}
@@ -162,7 +162,7 @@ void FKaosGameplayTagStackContainer::RemoveStack(FGameplayTag Tag)
 
 		if (!Stacks.IsValidIndex(FoundIndex))
 		{
-			UE_LOG(LogKaos, Warning, TEXT("Tag %s was not found in the stack container, but was being removed. This is a bug."), *Tag.ToString());
+			UE_LOG(LogKaosUtilities, Warning, TEXT("Tag %s was not found in the stack container, but was being removed. This is a bug."), *Tag.ToString());
 			TagToIndexMap.Remove(Tag);
 			return;
 		}
