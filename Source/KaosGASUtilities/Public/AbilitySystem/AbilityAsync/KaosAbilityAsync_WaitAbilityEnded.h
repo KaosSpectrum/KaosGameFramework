@@ -66,6 +66,7 @@ public:
 	static UKaosAbilityAsync_WaitAbilityEnded* WaitForAbilityEndedWithTags(
 		AActor* TargetActor,
 		FGameplayTagContainer AbilityTags,
+		EGameplayContainerMatchType MatchType = EGameplayContainerMatchType::Any,
 		bool bOnlyTriggerOnce = false);
 
 	/**
@@ -116,6 +117,8 @@ protected:
 
 	UPROPERTY(Transient)
 	FGameplayAbilitySpecHandle FilterSpecHandle;
+
+	EGameplayContainerMatchType FilterMatchType;
 
 	EWaitEndFilterMode FilterMode;
 

@@ -25,12 +25,13 @@
 #include UE_INLINE_GENERATED_CPP_BY_NAME(KaosAbilityAsync_WaitAbilityEnded)
 
 UKaosAbilityAsync_WaitAbilityEnded* UKaosAbilityAsync_WaitAbilityEnded::WaitForAbilityEndedWithTags(
-	AActor* TargetActor, FGameplayTagContainer AbilityTags, bool bOnlyTriggerOnce)
+	AActor* TargetActor, FGameplayTagContainer AbilityTags, EGameplayContainerMatchType MatchType, bool bOnlyTriggerOnce)
 {
 	UKaosAbilityAsync_WaitAbilityEnded* Obj = NewObject<UKaosAbilityAsync_WaitAbilityEnded>();
 	Obj->SetAbilityActor(TargetActor);
 	Obj->FilterMode = EWaitEndFilterMode::ByTags;
 	Obj->FilterTags = AbilityTags;
+	Obj->FilterMatchType = MatchType;
 	Obj->bOnlyTriggerOnce = bOnlyTriggerOnce;
 	return Obj;
 }
@@ -101,7 +102,15 @@ void UKaosAbilityAsync_WaitAbilityEnded::OnAbilityEnded(const FAbilityEndedData&
     case EWaitEndFilterMode::ByTags:
     {
         const FGameplayTagContainer& Tags = EndedAbility->GetAssetTags();
-        bMatch = Tags.HasAll(FilterTags);
+		switch (FilterMatchType)
+		{
+		case EGameplayContainerMatchType::Any:
+			bMatch = Tags.HasAny(FilterTags);
+			break;
+		case EGameplayContainerMatchType::All:
+			bMatch = Tags.HasAll(FilterTags);
+			break;
+		}
         break;
     }
 
