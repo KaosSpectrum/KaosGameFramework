@@ -103,7 +103,7 @@ void UKaosAbilityAsync_GameplayAbilityCooldown::Activate()
 			TArray<FGameplayAbilitySpec> Specs = ASC->GetActivatableAbilities();
 			for (const FGameplayAbilitySpec& Spec : Specs)
 			{
-				if (Spec.Ability && Spec.Ability->AbilityTags.HasTag(CachedWithAbilityTag) && !Spec.Ability->AbilityTags.HasTag(CachedWithoutAbilityTag))
+				if (Spec.Ability && Spec.Ability->GetAssetTags().HasTag(CachedWithAbilityTag) && !Spec.Ability->AbilityTags.HasTag(CachedWithoutAbilityTag))
 				{
 					const FGameplayTagContainer* CDTags = Spec.Ability->GetCooldownTags();
 					if (CDTags)

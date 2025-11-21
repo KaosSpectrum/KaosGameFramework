@@ -52,7 +52,7 @@ void UKaosAnimNotify_TriggerGameplayAbility::BranchingPointNotify(FBranchingPoin
 		for (const FGameplayAbilitySpec* Spec : OutSpecs)
 		{
 			const bool bValidAbility = Spec->Ability != nullptr;
-			const bool bTagsPass = Spec->Ability->AbilityTags.HasAll(FGameplayTagContainer(AbilityTriggerTag));
+			const bool bTagsPass = Spec->Ability->GetAssetTags().HasAll(FGameplayTagContainer(AbilityTriggerTag));
 			if (bValidAbility && bTagsPass && ASC->TryActivateAbility(Spec->Handle, false))
 			{
 				//We are done, 

@@ -18,7 +18,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#include "AbilityAsync_WaitAbilityEnded.h"
+#include "AbilitySystem/AbilityAsync/KaosAbilityAsync_WaitAbilityEnded.h"
 
 #include "AbilitySystemComponent.h"
 
