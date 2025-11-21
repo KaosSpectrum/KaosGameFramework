@@ -23,7 +23,7 @@
 #include "CoreMinimal.h"
 #include "Abilities/Async/AbilityAsync.h"
 #include "UObject/Object.h"
-#include "AbilityAsync_WaitAbilityEnded.generated.h"
+#include "KaosAbilityAsync_WaitAbilityEnded.generated.h"
 
 class UGameplayAbility;
 
